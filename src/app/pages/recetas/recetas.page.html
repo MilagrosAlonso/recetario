@@ -1,0 +1,83 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Recetas</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <!-- ion-searchbar: [debounce] espera 500 ms después de dejar de escribir antes de buscar -->
+    <ion-searchbar
+      placeholder="Buscar receta (ej: chicken, pasta)"
+      [debounce]="500"
+      (ionInput)="alBuscar($event)"
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- ion-refresher: tirar hacia abajo para recargar -->
+  <ion-refresher slot="fixed" (ionRefresh)="refrescar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- ion-segment: alterna entre tarjetas y lista -->
+  <ion-segment [value]="vista" (ionChange)="cambiarVista($event)">
+    <ion-segment-button value="tarjetas">
+      <ion-icon name="apps"></ion-icon>
+      <ion-label>Tarjetas</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="lista">
+      <ion-icon name="list"></ion-icon>
+      <ion-label>Lista</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- INDICADOR DE CARGA -->
+  <div class="estado" *ngIf="cargando">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando recetas...</p>
+  </div>
+
+  <!-- MENSAJE DE ERROR -->
+  <div class="estado error" *ngIf="error && !cargando">
+    <ion-icon name="alert-circle-outline" size="large"></ion-icon>
+    <p>No se pudieron cargar las recetas. Revisa tu conexión.</p>
+    <ion-button size="small" (click)="cargar()">Reintentar</ion-button>
+  </div>
+
+  <!-- Sin resultados -->
+  <div class="estado" *ngIf="!cargando && !error && recetas.length === 0">
+    <ion-icon name="search-outline" size="large"></ion-icon>
+    <p>No se encontraron recetas para "{{ texto }}".</p>
+  </div>
+
+  <ng-container *ngIf="!cargando && !error">
+    <!-- Vista de tarjetas: ion-card + ion-chip -->
+    <div *ngIf="vista === 'tarjetas'">
+      <ion-card *ngFor="let receta of recetas" button (click)="abrir(receta.idMeal)">
+        <img [src]="receta.strMealThumb" [alt]="receta.strMeal" loading="lazy" />
+        <ion-card-header>
+          <ion-card-subtitle>{{ receta.strArea }}</ion-card-subtitle>
+          <ion-card-title>{{ receta.strMeal }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-chip color="primary"><ion-label>{{ receta.strCategory }}</ion-label></ion-chip>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Vista de lista: ion-list + ion-item + ion-thumbnail -->
+    <ion-list *ngIf="vista === 'lista'">
+      <ion-item *ngFor="let receta of recetas" button detail (click)="abrir(receta.idMeal)">
+        <ion-thumbnail slot="start">
+          <img [src]="receta.strMealThumb" [alt]="receta.strMeal" loading="lazy" />
+        </ion-thumbnail>
+        <ion-label>
+          <h2>{{ receta.strMeal }}</h2>
+          <p>{{ receta.strCategory }} · {{ receta.strArea }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </ng-container>
+</ion-content>
+
+<!-- El modal vive aquí: se abre cuando recetaSeleccionada tiene un id y se cierra al ponerlo en null -->
+<app-receta-modal [idMeal]="recetaSeleccionada" (cerrar)="recetaSeleccionada = null"></app-receta-modal>
