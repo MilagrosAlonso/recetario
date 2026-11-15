@@ -1,59 +1,85 @@
 # Recetario
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.7.
+Aplicación móvil hecha con **Ionic + Angular** para explorar recetas de cocina, navegar por categorías y guardar tus favoritas.
 
-## Development server
+Proyecto final — Ionic + Angular.
 
-To start a local development server, run:
+## Integrantes
 
-```bash
-ng serve
+- Milagros Maria Lujan Alonso Morel
+
+## Fuente de datos
+
+[TheMealDB](https://www.themealdb.com/api.php): API pública en formato JSON. Se usa la clave de pruebas gratuita (`1`).
+
+La URL base está definida en:
+
+- `src/environments/environment.ts`
+- `src/environments/environment.prod.ts`
+
+Endpoints utilizados:
+
+| Endpoint | Uso |
+|----------|-----|
+| `search.php?s=` | Buscar recetas por nombre |
+| `categories.php` | Listar categorías |
+| `filter.php?c=` | Recetas de una categoría |
+| `lookup.php?i=` | Detalle de una receta |
+
+## Pestañas
+
+| Pestaña | Ícono | Qué hace |
+|---------|-------|----------|
+| Recetas | `restaurant` | Búsqueda, vista en tarjetas o lista, pull-to-refresh |
+| Categorías | `grid` | Acordeón con las categorías y sus recetas |
+| Favoritos | `heart` | Recetas guardadas en `localStorage`; se quitan deslizando |
+
+Al tocar una receta se abre un modal con la foto, los ingredientes, la preparación y el enlace al video.
+
+## Componentes de Ionic utilizados
+
+`ion-searchbar`, `ion-card`, `ion-segment`, `ion-modal`, `ion-chip`, `ion-toast`, `ion-accordion`, `ion-list` / `ion-item`, `ion-thumbnail`, `ion-refresher`, `ion-item-sliding`, `ion-badge`, `ion-spinner`.
+
+## Estructura del proyecto
+
+```
+src/
+├── environments/                 # URL de la API (desarrollo y producción)
+└── app/
+    ├── models/                   # Interfaces (Meal, Categoria...)
+    ├── services/
+    │   ├── meal.service.ts       # Consume TheMealDB con HttpClient
+    │   └── favoritos.service.ts  # Favoritos en localStorage
+    ├── components/
+    │   └── receta-modal/         # Detalle de la receta en un ion-modal
+    ├── pages/
+    │   ├── recetas/
+    │   ├── categorias/
+    │   └── favoritos/
+    └── tabs/                     # Plantilla de pestañas
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Cómo ejecutarlo
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Requisitos: [Node.js](https://nodejs.org) **22.22.3 o superior**.
 
 ```bash
-ng generate component component-name
+git clone https://github.com/MilagrosAlonso/recetario.git
+cd recetario
+npm install
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Abrir http://localhost:4200. Para verlo como celular: F12 y luego Ctrl+Shift+M.
+
+Para comprobar que compila:
 
 ```bash
-ng generate --help
+npm run build
 ```
 
-## Building
+## Capturas de pantalla
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+| Recetas | Categorías | Favoritos | Detalle |
+|---------|------------|-----------|---------|
+| ![Recetas](capturas/recetas.png) | ![Categorías](capturas/categorias.png) | ![Favoritos](capturas/favoritos.png) | ![Detalle](capturas/detalle.png) |
