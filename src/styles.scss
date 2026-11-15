@@ -1,0 +1,11 @@
+/* You can add global styles to this file, and also import other style files */
+/* Estilos globales. Los CSS base de Ionic ya se cargan desde angular.json. */
+:root {
+  /* Color principal (naranja). Todo lo que use color="primary" lo toma de acá. */
+  --ion-color-primary: #e65100;
+  --ion-color-primary-rgb: 230, 81, 0;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #ca7a00;
+  --ion-color-primary-tint: #e8660d;
+}
