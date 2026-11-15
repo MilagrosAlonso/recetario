@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Favoritos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- "| async" se suscribe al Observable solo y se desuscribe al salir; "as favoritos" guarda el valor -->
+  <ng-container *ngIf="favoritos$ | async as favoritos">
+    <!-- Estado vacío -->
+    <div class="vacio" *ngIf="favoritos.length === 0">
+      <ion-icon name="heart-outline" size="large"></ion-icon>
+      <p>Todavía no tienes recetas favoritas.</p>
+      <p class="ayuda">Abre una receta y toca el corazón para guardarla aquí.</p>
+    </div>
+
+    <ion-list *ngIf="favoritos.length > 0">
+      <!-- ion-item-sliding: deslizar el ítem revela el botón de borrar -->
+      <ion-item-sliding *ngFor="let receta of favoritos">
+        <ion-item button detail (click)="abrir(receta.idMeal)">
+          <ion-thumbnail slot="start">
+            <img [src]="receta.strMealThumb" [alt]="receta.strMeal" loading="lazy" />
+          </ion-thumbnail>
+          <ion-label>{{ receta.strMeal }}</ion-label>
+        </ion-item>
+        <ion-item-options side="end">
+          <ion-item-option color="danger" (click)="quitar(receta)">
+            <ion-icon slot="icon-only" name="trash"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ion-list>
+  </ng-container>
+</ion-content>
+
+<app-receta-modal [idMeal]="recetaSeleccionada" (cerrar)="recetaSeleccionada = null"></app-receta-modal>
