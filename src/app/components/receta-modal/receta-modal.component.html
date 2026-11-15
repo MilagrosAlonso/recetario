@@ -1,0 +1,65 @@
+<!-- El modal está abierto mientras idMeal tenga valor. didDismiss ocurre al cerrarlo deslizando -->
+<ion-modal [isOpen]="!!idMeal" (didDismiss)="cerrar.emit()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>{{ receta?.strMeal || 'Receta' }}</ion-title>
+        <ion-buttons slot="end">
+          <!-- Corazón: cambia de ícono según sea favorito o no -->
+          <ion-button (click)="alternarFavorito()" [disabled]="!receta" aria-label="Favorito">
+            <ion-icon slot="icon-only" [name]="esFavorito ? 'heart' : 'heart-outline'"></ion-icon>
+          </ion-button>
+          <ion-button (click)="cerrar.emit()" aria-label="Cerrar">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <!-- INDICADOR DE CARGA -->
+      <div class="estado" *ngIf="cargando">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Cargando receta...</p>
+      </div>
+
+      <!-- MENSAJE DE ERROR -->
+      <div class="estado error" *ngIf="error && !cargando">
+        <ion-icon name="alert-circle-outline" size="large"></ion-icon>
+        <p>No se pudo cargar la receta.</p>
+        <ion-button size="small" (click)="idMeal && cargar(idMeal)">Reintentar</ion-button>
+      </div>
+
+      <!-- CONTENIDO -->
+      <div *ngIf="receta && !cargando">
+        <img class="foto" [src]="receta.strMealThumb" [alt]="receta.strMeal" />
+
+        <div class="chips">
+          <ion-chip color="primary"><ion-label>{{ receta.strCategory }}</ion-label></ion-chip>
+          <ion-chip color="secondary"><ion-label>{{ receta.strArea }}</ion-label></ion-chip>
+          <ion-chip *ngFor="let etiqueta of etiquetas" outline>
+            <ion-label>{{ etiqueta }}</ion-label>
+          </ion-chip>
+        </div>
+
+        <h3 class="seccion">Ingredientes</h3>
+        <ion-list lines="none">
+          <ion-item *ngFor="let ing of ingredientes">
+            <ion-label>{{ ing.nombre }}</ion-label>
+            <ion-label slot="end" class="medida">{{ ing.medida }}</ion-label>
+          </ion-item>
+        </ion-list>
+
+        <h3 class="seccion">Preparación</h3>
+        <p class="instrucciones">{{ receta.strInstructions }}</p>
+
+        <div class="video" *ngIf="receta.strYoutube">
+          <ion-button fill="outline" [href]="receta.strYoutube" target="_blank" rel="noopener">
+            <ion-icon slot="start" name="logo-youtube"></ion-icon>
+            Ver video
+          </ion-button>
+        </div>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
