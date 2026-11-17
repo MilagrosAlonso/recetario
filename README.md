@@ -93,6 +93,10 @@ npm run build
 |---------|------------|-----------|---------|
 | ![Recetas](capturas/recetas.png) | ![Categorías](capturas/categorias.png) | ![Favoritos](capturas/favoritos.png) | ![Detalle](capturas/detalle.png) |
 
+## Documentación
+
+- [Documentación del proyecto (PDF)](docs/recetario.pdf)
+- [Código fuente en LaTeX](docs/recetario.tex)
 
 ## Uso de IA
 
