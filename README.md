@@ -83,3 +83,8 @@ npm run build
 | Recetas | Categorías | Favoritos | Detalle |
 |---------|------------|-----------|---------|
 | ![Recetas](capturas/recetas.png) | ![Categorías](capturas/categorias.png) | ![Favoritos](capturas/favoritos.png) | ![Detalle](capturas/detalle.png) |
+
+
+## Uso de IA
+
+Ver [IA.md](IA.md).
