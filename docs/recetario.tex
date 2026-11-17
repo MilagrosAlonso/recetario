@@ -1,0 +1,247 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{verde}{HTML}{4F7A45}
+\definecolor{gris}{HTML}{F3F3F3}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{gris},
+  frame=single,
+  rulecolor=\color{gray!50},
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  xleftmargin=4pt,
+  xrightmargin=4pt,
+}
+
+\setlist{itemsep=2pt, topsep=4pt}
+\sloppy
+\emergencystretch=3em
+\newcommand{\cod}[1]{\texttt{\detokenize{#1}}}
+
+\title{\textbf{Recetario}\\[4pt]\large Aplicaci\'on m\'ovil con Ionic y Angular\\[2pt]\large Documentaci\'on del proyecto}
+\author{Milagros Maria Luj\'an Alonso Morel}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+%------------------------------------------------------------
+\section{Descripci\'on general}
+
+\textbf{Recetario} es una aplicaci\'on m\'ovil desarrollada con \textbf{Angular} (el framework que organiza el c\'odigo) e \textbf{Ionic} (la librer\'ia de componentes visuales para m\'oviles: botones, tarjetas, modales y pesta\~nas).
+
+La aplicaci\'on tiene tres pesta\~nas:
+
+\begin{itemize}
+  \item \textbf{Recetas:} b\'usqueda de recetas, con vista en tarjetas o en lista.
+  \item \textbf{Categor\'ias:} acorde\'on con las categor\'ias y las recetas de cada una.
+  \item \textbf{Favoritos:} recetas guardadas, que se quitan deslizando el elemento.
+\end{itemize}
+
+Al tocar una receta se abre un \textbf{modal} con la foto, los ingredientes, la preparaci\'on y el enlace al video.
+
+%------------------------------------------------------------
+\section{Fuente de datos: servicio externo}
+
+La aplicaci\'on consume \textbf{TheMealDB}, una API p\'ublica de recetas que responde en formato JSON. La app no tiene base de datos propia: realiza peticiones HTTP y recibe los datos por internet. Se usa la clave de pruebas gratuita (\cod{1}).
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Petici\'on} & \textbf{Uso} \\
+\midrule
+\cod{search.php?s=}     & Buscar recetas por nombre \\
+\cod{categories.php}    & Listar las categor\'ias \\
+\cod{filter.php?c=}     & Recetas de una categor\'ia \\
+\cod{lookup.php?i=}     & Detalle completo de una receta \\
+\bottomrule
+\end{tabularx}
+\caption{Endpoints de TheMealDB utilizados.}
+\end{table}
+
+La direcci\'on base de la API est\'a en \cod{src/environments/environment.ts} (desarrollo) y \cod{environment.prod.ts} (producci\'on), de modo que se puede cambiar en un solo lugar.
+
+%------------------------------------------------------------
+\section{Arranque de la aplicaci\'on}
+
+\begin{enumerate}
+  \item \cod{main.ts} inicia la aplicaci\'on con \cod{bootstrapApplication}, usando la configuraci\'on de \cod{app.config.ts}.
+  \item \cod{app.config.ts} activa \cod{provideHttpClient()} (peticiones HTTP), \cod{provideIonicAngular()} (componentes de Ionic) y \cod{provideRouter()} (rutas).
+  \item \cod{app.ts} y \cod{app.html} forman el componente ra\'iz. Su plantilla contiene \cod{<ion-router-outlet>}, donde Ionic dibuja la p\'agina activa.
+  \item \cod{app.routes.ts} carga las rutas de las pesta\~nas.
+  \item \cod{tabs/tabs.routes.ts} define las rutas \cod{/tabs/recetas}, \cod{/tabs/categorias} y \cod{/tabs/favoritos}. Usa \cod{loadComponent}, es decir, \textbf{carga perezosa}: cada p\'agina se descarga solo cuando el usuario entra a ella.
+  \item \cod{tabs/tabs.page} dibuja la barra de pesta\~nas inferior y un globito rojo (\cod{ion-badge}) con la cantidad de favoritos.
+\end{enumerate}
+
+\begin{lstlisting}[caption={Rutas de las pestanas (tabs.routes.ts, resumido).}]
+export const routes: Routes = [
+  {
+    path: 'tabs',
+    component: TabsPage,
+    children: [
+      { path: 'recetas',
+        loadComponent: () => import('../pages/recetas/recetas.page')
+                               .then((m) => m.RecetasPage) },
+      // categorias y favoritos funcionan igual
+      { path: '', redirectTo: '/tabs/recetas', pathMatch: 'full' },
+    ],
+  },
+];
+\end{lstlisting}
+
+%------------------------------------------------------------
+\section{Estructura del proyecto}
+
+\begin{lstlisting}
+src/
+|-- environments/                  URL de la API (desarrollo y produccion)
+`-- app/
+    |-- models/                    Interfaces de datos (Meal, Categoria...)
+    |-- services/
+    |   |-- meal.service.ts        Consume TheMealDB con HttpClient
+    |   |-- favoritos.service.ts   Favoritos en localStorage
+    |   `-- traduccion.service.ts  Traduccion al espanol (MyMemory)
+    |-- utils/diccionario.ts       Diccionarios ingles -> espanol
+    |-- pipes/diccionario.pipe.ts  Pipe para usar el diccionario
+    |-- components/receta-modal/   Detalle de la receta en un modal
+    |-- pages/
+    |   |-- recetas/
+    |   |-- categorias/
+    |   `-- favoritos/
+    `-- tabs/                      Plantilla de pestanas
+\end{lstlisting}
+
+%------------------------------------------------------------
+\section{Modelos}
+
+El archivo \cod{models/meal.model.ts} contiene interfaces de TypeScript que describen la forma de los datos: \cod{Meal} (receta completa), \cod{MealResumen} (versi\'on corta), \cod{Categoria} e \cod{Ingrediente}. Sirven para que el compilador detecte errores al usar un campo que no existe.
+
+La API devuelve los ingredientes como campos sueltos \cod{strIngredient1} a \cod{strIngredient20}, por eso \cod{Meal} permite acceder a sus campos con corchetes.
+
+%------------------------------------------------------------
+\section{Servicios}
+
+Los servicios son clases con l\'ogica que no depende de la pantalla. Se crean una sola vez para toda la app (\cod{providedIn: 'root'}) y Angular los entrega a quien los pida en el constructor. Esto se llama \textbf{inyecci\'on de dependencias}.
+
+\subsection{MealService}
+
+Es el que consume la API con \cod{HttpClient}. Tiene los m\'etodos \cod{buscar}, \cod{obtenerCategorias}, \cod{obtenerPorCategoria} y \cod{obtenerDetalle}. Cada uno devuelve un \textbf{Observable}: un flujo de datos que llegar\'an m\'as tarde. Con \cod{pipe(map(...))} se transforma la respuesta antes de recibirla; por ejemplo, si la API devuelve \cod{null} (sin resultados), se convierte en una lista vac\'ia.
+
+El m\'etodo \cod{extraerIngredientes} convierte los 20 campos sueltos de la API en una lista ordenada de ingredientes con su medida.
+
+\begin{lstlisting}[caption={Consulta del detalle de una receta.}]
+obtenerDetalle(id: string): Observable<Meal | null> {
+  return this.http
+    .get<{ meals: Meal[] | null }>(`${this.url}/lookup.php`, { params: { i: id } })
+    .pipe(map((r) => r.meals?.[0] ?? null));
+}
+\end{lstlisting}
+
+\subsection{FavoritosService}
+
+Guarda los favoritos en \cod{localStorage}, la memoria del propio navegador (no es un servicio externo). Mantiene la lista en un \cod{BehaviorSubject}, un Observable que recuerda el \'ultimo valor y avisa a quien lo escuche cuando cambia. Por eso, al agregar un favorito, el globito de las pesta\~nas y la pantalla de Favoritos se actualizan solos. El m\'etodo \cod{alternar} agrega la receta si no est\'a y la quita si ya est\'a.
+
+\subsection{TraduccionService}
+
+Traduce textos al espa\~nol (ver la secci\'on~\ref{sec:traduccion}).
+
+%------------------------------------------------------------
+\section{Pantallas}
+
+\subsection{Recetas}
+
+\begin{itemize}
+  \item Al iniciar (\cod{ngOnInit}) busca con la letra ``a'' para mostrar recetas de entrada.
+  \item \cod{ion-searchbar} usa \cod{[debounce]="500"}: espera medio segundo despu\'es de dejar de escribir antes de buscar, para no hacer una petici\'on por cada letra.
+  \item \cod{ion-segment} alterna entre vista de \textbf{tarjetas} (\cod{ion-card}) y de \textbf{lista} (\cod{ion-list}).
+  \item \cod{ion-refresher} permite tirar hacia abajo para recargar.
+  \item Maneja tres estados con \cod{*ngIf}: cargando (spinner), error (con bot\'on Reintentar) y sin resultados.
+  \item Al tocar una receta guarda su id en \cod{recetaSeleccionada}, lo que abre el modal.
+\end{itemize}
+
+\subsection{Categor\'ias}
+
+Muestra un \cod{ion-accordion} por categor\'ia. Las recetas de una categor\'ia se cargan \textbf{solo al abrir el acorde\'on} y se guardan en \cod{recetasPorCategoria}, para no repetir la petici\'on si se vuelve a abrir.
+
+\subsection{Favoritos}
+
+Usa \verb+favoritos$ | async+: el pipe \cod{async} se suscribe al Observable y se desuscribe al salir de la pantalla. Cada favorito es un \cod{ion-item-sliding}: al deslizarlo aparece el bot\'on rojo de borrar. Si no hay favoritos, muestra un mensaje de estado vac\'io.
+
+\subsection{Modal de la receta}
+
+\begin{itemize}
+  \item Es un componente aparte, reutilizado por las tres pantallas.
+  \item Recibe un \cod{@Input() idMeal}. Cuando el id cambia, \cod{ngOnChanges} llama a \cod{cargar}, que pide el detalle a la API.
+  \item Al cerrarse avisa a la pantalla con un \cod{@Output() cerrar}, y la pantalla pone \cod{recetaSeleccionada = null}.
+  \item El coraz\'on agrega o quita la receta de favoritos y muestra un \cod{ion-toast} (aviso corto).
+  \item Muestra la foto, las etiquetas (\cod{ion-chip}), los ingredientes, la preparaci\'on y el bot\'on del video.
+\end{itemize}
+
+%------------------------------------------------------------
+\section{Traducci\'on al espa\~nol}
+\label{sec:traduccion}
+
+TheMealDB solo devuelve datos en ingl\'es. Se resolvi\'o combinando dos t\'ecnicas:
+
+\begin{enumerate}
+  \item \textbf{Diccionario local} (\cod{utils/diccionario.ts} y \cod{pipes/diccionario.pipe.ts}) para categor\'ias, pa\'ises, ingredientes y medidas. Es r\'apido y no depende de internet. Un \textbf{pipe} es una herramienta de Angular que transforma un valor en la plantilla, por ejemplo \verb+{{ receta.strCategory | diccionario:'categoria' }}+.
+  \item \textbf{API MyMemory} (\cod{TraduccionService}) para el t\'itulo, la preparaci\'on y la descripci\'on de las categor\'ias. Divide los textos largos en trozos de hasta 450 caracteres (l\'imite de la API), guarda en memoria lo ya traducido y, si la traducci\'on falla (sin internet o l\'imite diario), muestra el texto original en ingl\'es.
+\end{enumerate}
+
+\paragraph{Limitaciones.} La versi\'on gratuita de MyMemory tiene un l\'imite diario de caracteres. Los nombres de las recetas en las listas, las etiquetas y los ingredientes que no est\'an en el diccionario quedan en ingl\'es.
+
+%------------------------------------------------------------
+\section{Error encontrado y corregido}
+
+\paragraph{S\'intoma.} Al abrir una receta, el modal quedaba en ``Cargando receta\ldots'' aunque la petici\'on \cod{lookup.php} respond\'ia con estado 200.
+
+\paragraph{Causa.} En Angular 22 los componentes usan por defecto la detecci\'on de cambios \cod{OnPush}, que solo vuelve a dibujar la pantalla en ciertos casos y no cuando termina una petici\'on HTTP. Los componentes \cod{App} y \cod{TabsPage}, que contienen a las p\'aginas, estaban en \cod{OnPush}, por lo que la pantalla no se actualizaba aunque los datos ya hubieran llegado.
+
+\paragraph{Soluci\'on.} Se agreg\'o \cod{changeDetection: ChangeDetectionStrategy.Eager} a \cod{App}, \cod{TabsPage}, las tres p\'aginas y el modal.
+
+\begin{lstlisting}
+@Component({
+  changeDetection: ChangeDetectionStrategy.Eager,
+  selector: 'app-root',
+  // ...
+})
+\end{lstlisting}
+
+%------------------------------------------------------------
+\section{Conceptos clave}
+
+\begin{description}
+  \item[Componente] Pieza de la pantalla con su l\'ogica (\cod{.ts}), su vista (\cod{.html}) y sus estilos (\cod{.scss}).
+  \item[Servicio] Clase con l\'ogica reutilizable que se inyecta donde se necesita.
+  \item[Observable] Flujo de datos que llegan con el tiempo; se usa \cod{subscribe} para recibirlos y \cod{pipe(map(...))} para transformarlos.
+  \item[Inyecci\'on de dependencias] En lugar de crear el servicio con \cod{new}, el componente lo pide en el constructor y Angular se lo entrega.
+  \item[Carga perezosa] Cada p\'agina se descarga solo cuando se entra a ella, para que la app arranque m\'as r\'apido.
+  \item[localStorage] Memoria del navegador donde se guardan los favoritos para que sobrevivan al cerrar la app.
+  \item[Pipe] Transforma un valor dentro de la plantilla HTML.
+\end{description}
+
+%------------------------------------------------------------
+\section{Uso de inteligencia artificial}
+
+Se us\'o Claude (Anthropic) como herramienta de apoyo para corregir errores, resolver problemas con GitHub, consultar c\'omo generar el APK, encontrar el error de la carga infinita y agregar la traducci\'on al espa\~nol. El detalle est\'a en el archivo \cod{IA.md} del repositorio.
+
+\end{document}
