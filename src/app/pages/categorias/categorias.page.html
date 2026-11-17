@@ -26,12 +26,12 @@
         <ion-thumbnail slot="start">
           <img [src]="cat.strCategoryThumb" [alt]="cat.strCategory" loading="lazy" />
         </ion-thumbnail>
-        <ion-label>{{ cat.strCategory }}</ion-label>
+        <ion-label>{{ cat.strCategory | diccionario: 'categoria' }}</ion-label>
       </ion-item>
 
       <!-- Parte que se muestra al desplegar -->
       <div slot="content" class="contenido">
-        <p class="descripcion">{{ cat.strCategoryDescription }}</p>
+        <p class="descripcion">{{ descripcionesEs[cat.strCategory] || cat.strCategoryDescription }}</p>
 
         <div class="estado" *ngIf="cargandoCategoria === cat.strCategory">
           <ion-spinner name="dots"></ion-spinner>

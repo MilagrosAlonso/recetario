@@ -5,7 +5,7 @@
   <ion-toolbar>
     <!-- ion-searchbar: [debounce] espera 500 ms después de dejar de escribir antes de buscar -->
     <ion-searchbar
-      placeholder="Buscar receta (ej: chicken, pasta)"
+      placeholder="Buscar receta (ej: pollo, pasta)"
       [debounce]="500"
       (ionInput)="alBuscar($event)"
     ></ion-searchbar>
@@ -55,11 +55,11 @@
       <ion-card *ngFor="let receta of recetas" button (click)="abrir(receta.idMeal)">
         <img [src]="receta.strMealThumb" [alt]="receta.strMeal" loading="lazy" />
         <ion-card-header>
-          <ion-card-subtitle>{{ receta.strArea }}</ion-card-subtitle>
+          <ion-card-subtitle>{{ receta.strArea | diccionario: 'area' }}</ion-card-subtitle>
           <ion-card-title>{{ receta.strMeal }}</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <ion-chip color="primary"><ion-label>{{ receta.strCategory }}</ion-label></ion-chip>
+          <ion-chip color="primary"><ion-label>{{ receta.strCategory | diccionario: 'categoria' }}</ion-label></ion-chip>
         </ion-card-content>
       </ion-card>
     </div>
@@ -72,7 +72,7 @@
         </ion-thumbnail>
         <ion-label>
           <h2>{{ receta.strMeal }}</h2>
-          <p>{{ receta.strCategory }} · {{ receta.strArea }}</p>
+          <p>{{ receta.strCategory | diccionario: 'categoria' }} · {{ receta.strArea | diccionario: 'area' }}</p>
         </ion-label>
       </ion-item>
     </ion-list>

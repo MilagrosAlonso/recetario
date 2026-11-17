@@ -1,5 +1,5 @@
 import { NgFor, NgIf } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -22,13 +22,16 @@ import { alertCircleOutline, close, heart, heartOutline, logoYoutube } from 'ion
 import { Ingrediente, Meal } from '../../models/meal.model';
 import { FavoritosService } from '../../services/favoritos.service';
 import { MealService } from '../../services/meal.service';
+import { TraduccionService } from '../../services/traduccion.service';
+import { DiccionarioPipe } from '../../pipes/diccionario.pipe';
+import { ingredienteEs, medidaEs } from '../../utils/diccionario';
 
 /** Modal con el detalle completo de una receta. Se abre cuando `idMeal` tiene valor. */
 @Component({
-  selector: 'app-receta-modal', // se usa en HTML como <app-receta-modal>
+  changeDetection: ChangeDetectionStrategy.Eager,
+  selector: 'app-receta-modal',
   templateUrl: './receta-modal.component.html',
   styleUrls: ['./receta-modal.component.scss'],
-  // Cada componente declara qué usa en su HTML
   imports: [
     NgIf,
     NgFor,
@@ -45,27 +48,31 @@ import { MealService } from '../../services/meal.service';
     IonSpinner,
     IonList,
     IonItem,
+    DiccionarioPipe,
   ],
 })
 export class RecetaModalComponent implements OnChanges {
-  @Input() idMeal: string | null = null;       // el padre pasa el id; si es null el modal está cerrado
-  @Output() cerrar = new EventEmitter<void>(); // avisa al padre que hay que cerrar
+  @Input() idMeal: string | null = null;
+  @Output() cerrar = new EventEmitter<void>();
 
   receta: Meal | null = null;
   ingredientes: Ingrediente[] = [];
   cargando = false;
   error = false;
+  /** Título e instrucciones en español (hasta que llega la traducción se muestra el original). */
+  tituloEs = '';
+  instruccionesEs = '';
+  traduciendo = false;
 
   constructor(
     private mealService: MealService,
     private favoritosService: FavoritosService,
-    private toastCtrl: ToastController, // para el aviso (ion-toast)
+    private toastCtrl: ToastController,
+    private traduccionService: TraduccionService,
   ) {
-    // Ionic necesita que se registren los íconos que se usan por nombre
     addIcons({ alertCircleOutline, close, heart, heartOutline, logoYoutube });
   }
 
-  // Se ejecuta cuando cambia un @Input, o sea, cuando el padre elige otra receta
   ngOnChanges(): void {
     if (this.idMeal) {
       this.cargar(this.idMeal);
@@ -79,14 +86,40 @@ export class RecetaModalComponent implements OnChanges {
     this.mealService.obtenerDetalle(id).subscribe({
       next: (meal) => {
         this.receta = meal;
-        this.ingredientes = meal ? this.mealService.extraerIngredientes(meal) : [];
+        // Ingredientes y medidas se traducen con el diccionario local
+        this.ingredientes = meal
+          ? this.mealService
+              .extraerIngredientes(meal)
+              .map((i) => ({ nombre: ingredienteEs(i.nombre), medida: medidaEs(i.medida) }))
+          : [];
+        this.tituloEs = meal?.strMeal ?? '';
+        this.instruccionesEs = meal?.strInstructions ?? '';
         this.error = !meal;
         this.cargando = false;
+        if (meal) {
+          this.traducirTextos(meal);
+        }
       },
       error: () => {
         this.error = true;
         this.cargando = false;
       },
+    });
+  }
+
+  /** Título e instrucciones se traducen con la API; si falla, queda el texto en inglés. */
+  private traducirTextos(meal: Meal): void {
+    this.traduciendo = true;
+    this.traduccionService.traducir(meal.strMeal).subscribe((t) => {
+      if (this.receta === meal) {
+        this.tituloEs = t || meal.strMeal;
+      }
+    });
+    this.traduccionService.traducir(meal.strInstructions).subscribe((t) => {
+      if (this.receta === meal) {
+        this.instruccionesEs = t || meal.strInstructions;
+        this.traduciendo = false;
+      }
     });
   }
 
@@ -108,7 +141,6 @@ export class RecetaModalComponent implements OnChanges {
     await toast.present();
   }
 
-  // La API manda las etiquetas como "Pasta,Baking": se separan por coma
   get etiquetas(): string[] {
     return this.receta?.strTags ? this.receta.strTags.split(',').filter((t) => t.trim()) : [];
   }

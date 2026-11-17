@@ -3,7 +3,7 @@
   <ng-template>
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-title>{{ receta?.strMeal || 'Receta' }}</ion-title>
+        <ion-title>{{ tituloEs || 'Receta' }}</ion-title>
         <ion-buttons slot="end">
           <!-- Corazón: cambia de ícono según sea favorito o no -->
           <ion-button (click)="alternarFavorito()" [disabled]="!receta" aria-label="Favorito">
@@ -35,8 +35,8 @@
         <img class="foto" [src]="receta.strMealThumb" [alt]="receta.strMeal" />
 
         <div class="chips">
-          <ion-chip color="primary"><ion-label>{{ receta.strCategory }}</ion-label></ion-chip>
-          <ion-chip color="secondary"><ion-label>{{ receta.strArea }}</ion-label></ion-chip>
+          <ion-chip color="primary"><ion-label>{{ receta.strCategory | diccionario: 'categoria' }}</ion-label></ion-chip>
+          <ion-chip color="secondary"><ion-label>{{ receta.strArea | diccionario: 'area' }}</ion-label></ion-chip>
           <ion-chip *ngFor="let etiqueta of etiquetas" outline>
             <ion-label>{{ etiqueta }}</ion-label>
           </ion-chip>
@@ -51,7 +51,8 @@
         </ion-list>
 
         <h3 class="seccion">Preparación</h3>
-        <p class="instrucciones">{{ receta.strInstructions }}</p>
+        <p class="instrucciones">{{ instruccionesEs }}</p>
+        <p class="traduciendo" *ngIf="traduciendo">Traduciendo...</p>
 
         <div class="video" *ngIf="receta.strYoutube">
           <ion-button fill="outline" [href]="receta.strYoutube" target="_blank" rel="noopener">

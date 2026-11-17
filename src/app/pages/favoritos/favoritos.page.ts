@@ -1,5 +1,5 @@
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
   IonContent,
   IonHeader,
@@ -15,14 +15,15 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { heartOutline, trash } from 'ionicons/icons';
 import { Observable } from 'rxjs';
+import { heartOutline, trash } from 'ionicons/icons';
 
 import { RecetaModalComponent } from '../../components/receta-modal/receta-modal.component';
 import { MealResumen } from '../../models/meal.model';
 import { FavoritosService } from '../../services/favoritos.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-favoritos',
   templateUrl: './favoritos.page.html',
   styleUrls: ['./favoritos.page.scss'],
@@ -46,8 +47,6 @@ import { FavoritosService } from '../../services/favoritos.service';
   ],
 })
 export class FavoritosPage {
-  // Se declara acá y se asigna en el constructor
-  // (si se asignara en la declaración, TypeScript se queja de usar el servicio antes de recibirlo)
   favoritos$: Observable<MealResumen[]>;
   recetaSeleccionada: string | null = null;
 
@@ -61,6 +60,6 @@ export class FavoritosPage {
   }
 
   quitar(receta: MealResumen): void {
-    this.favoritosService.alternar(receta); // como ya es favorita, la quita
+    this.favoritosService.alternar(receta);
   }
 }

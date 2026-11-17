@@ -1,7 +1,7 @@
 import { NgFor, NgIf } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { AccordionGroupCustomEvent } from '@ionic/angular';
 import {
-  AccordionGroupCustomEvent,
   IonAccordion,
   IonAccordionGroup,
   IonButton,
@@ -21,9 +21,12 @@ import { alertCircleOutline } from 'ionicons/icons';
 
 import { RecetaModalComponent } from '../../components/receta-modal/receta-modal.component';
 import { Categoria, MealResumen } from '../../models/meal.model';
+import { DiccionarioPipe } from '../../pipes/diccionario.pipe';
 import { MealService } from '../../services/meal.service';
+import { TraduccionService } from '../../services/traduccion.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-categorias',
   templateUrl: './categorias.page.html',
   styleUrls: ['./categorias.page.scss'],
@@ -44,6 +47,7 @@ import { MealService } from '../../services/meal.service';
     IonIcon,
     IonButton,
     RecetaModalComponent,
+    DiccionarioPipe,
   ],
 })
 export class CategoriasPage implements OnInit {
@@ -51,14 +55,20 @@ export class CategoriasPage implements OnInit {
   cargando = false;
   error = false;
 
-  /** "Caché": recetas ya descargadas por categoría, para no pedirlas dos veces. */
+  /** Recetas ya descargadas por categoría (para no repetir la petición). */
   recetasPorCategoria: Record<string, MealResumen[]> = {};
-  cargandoCategoria: string | null = null; // categoría que se está cargando ahora
-  errorCategoria: string | null = null;    // categoría que falló
+  cargandoCategoria: string | null = null;
+  errorCategoria: string | null = null;
+
+  /** Descripciones de categoría ya traducidas al español. */
+  descripcionesEs: Record<string, string> = {};
 
   recetaSeleccionada: string | null = null;
 
-  constructor(private mealService: MealService) {
+  constructor(
+    private mealService: MealService,
+    private traduccionService: TraduccionService,
+  ) {
     addIcons({ alertCircleOutline });
   }
 
@@ -81,11 +91,15 @@ export class CategoriasPage implements OnInit {
     });
   }
 
-  // Se dispara al abrir un acordeón. ev.detail.value es el nombre de la categoría abierta
   alAbrirAcordeon(ev: AccordionGroupCustomEvent): void {
     const categoria = ev.detail.value as string | undefined;
     if (categoria && !this.recetasPorCategoria[categoria]) {
-      this.cargarRecetas(categoria); // solo se pide si todavía no la tenemos
+      this.cargarRecetas(categoria);
+    }
+    // La descripción viene en inglés: se traduce la primera vez que se abre la categoría
+    const descripcion = this.categorias.find((c) => c.strCategory === categoria)?.strCategoryDescription;
+    if (categoria && descripcion && !this.descripcionesEs[categoria]) {
+      this.traduccionService.traducir(descripcion).subscribe((t) => (this.descripcionesEs[categoria] = t));
     }
   }
 
@@ -94,7 +108,7 @@ export class CategoriasPage implements OnInit {
     this.errorCategoria = null;
     this.mealService.obtenerPorCategoria(categoria).subscribe({
       next: (recetas) => {
-        this.recetasPorCategoria[categoria] = recetas; // se guarda en la caché
+        this.recetasPorCategoria[categoria] = recetas;
         this.cargandoCategoria = null;
       },
       error: () => {
