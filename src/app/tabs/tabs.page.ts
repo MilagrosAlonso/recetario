@@ -1,5 +1,5 @@
 import { AsyncPipe, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { IonBadge, IonIcon, IonLabel, IonTabBar, IonTabButton, IonTabs } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { grid, heart, restaurant } from 'ionicons/icons';
@@ -8,6 +8,7 @@ import { Observable, map } from 'rxjs';
 import { FavoritosService } from '../services/favoritos.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-tabs',
   templateUrl: './tabs.page.html',
   imports: [AsyncPipe, NgIf, IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, IonBadge],
