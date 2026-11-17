@@ -58,6 +58,15 @@ src/
     │   └── favoritos/
     └── tabs/                     # Plantilla de pestañas
 ```
+## Descargar la aplicación (APK)
+
+Podés instalar la app en un celular Android descargando el APK desde la sección de versiones:
+
+- [Ver la versión v1.0 (Release)](https://github.com/MilagrosAlonso/recetario/releases/tag/v1.0)
+- [Descargar directamente app-debug.apk](https://github.com/MilagrosAlonso/recetario/releases/download/v1.0/app-debug.apk)
+
+Para instalarla hay que permitir la instalación de aplicaciones de fuentes desconocidas en el celular. Se necesita conexión a internet para ver las recetas.
+
 
 ## Cómo ejecutarlo
 
