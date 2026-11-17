@@ -91,7 +91,7 @@ npm run build
 
 | Recetas | Categorías | Favoritos | Detalle |
 |---------|------------|-----------|---------|
-| ![Recetas](capturas/recetas.png) | ![Categorías](capturas/categorias.png) | ![Favoritos](capturas/favoritos.png) | ![Detalle](capturas/detalle.png) |
+| ![recetas](capturas/recetas.png) | ![categorias](capturas/categorias.png) | ![favoritos](capturas/favoritos.png) | ![inicio](capturas/inicio.png) |
 
 ## Documentación
 
