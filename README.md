@@ -89,10 +89,9 @@ npm run build
 
 ## Capturas de pantalla
 
-| Recetas | Categorías | Favoritos | Detalle |
-|---------|------------|-----------|---------|
-| ![recetas](capturas/recetas.png) | ![categorias](capturas/categorias.png) | ![favoritos](capturas/favoritos.png) | ![inicio](capturas/inicio.png) |
-
+| Inicio | Recetas | Categorías | Favoritos |
+|--------|---------|------------|-----------|
+| ![Inicio](public/capturas/inicio.png) | ![Recetas](public/capturas/recetas.png) | ![Categorías](public/capturas/categorias.png) | ![Favoritos](public/capturas/favoritos.png) |
 ## Documentación
 
 - [Documentación del proyecto (PDF)](docs/recetario.pdf)
