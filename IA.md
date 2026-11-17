@@ -17,6 +17,11 @@ La inteligencia artificial se utilizó como herramienta de apoyo durante el desa
 - Instalación y configuración del entorno de desarrollo en Windows.
 - Creación y configuración del proyecto con Ionic y Angular.
 - Organización de carpetas y archivos.
+- El código de este proyecto se realizó con apoyo de:
+   - Videos de YouTube sobre desarrollo con Angular e Ionic.
+   - Documentación oficial de Angular.
+   - Documentación oficial de TypeScript.
+   - Documentación oficial de Ionic.
 - Implementación, ejecución y pruebas de las funcionalidades.
 - Integración del servicio externo de recetas.
 - Creación y administración del repositorio en GitHub.
