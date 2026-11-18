@@ -1,65 +1,109 @@
 <!-- El modal está abierto mientras idMeal tenga valor. didDismiss ocurre al cerrarlo deslizando -->
 <ion-modal [isOpen]="!!idMeal" (didDismiss)="cerrar.emit()">
   <ng-template>
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>{{ tituloEs || 'Receta' }}</ion-title>
-        <ion-buttons slot="end">
-          <!-- Corazón: cambia de ícono según sea favorito o no -->
-          <ion-button (click)="alternarFavorito()" [disabled]="!receta" aria-label="Favorito">
-            <ion-icon slot="icon-only" [name]="esFavorito ? 'heart' : 'heart-outline'"></ion-icon>
-          </ion-button>
-          <ion-button (click)="cerrar.emit()" aria-label="Cerrar">
-            <ion-icon slot="icon-only" name="close"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content>
-      <!-- INDICADOR DE CARGA -->
-      <div class="estado" *ngIf="cargando">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>Cargando receta...</p>
+    <ion-content [fullscreen]="true" class="detalle">
+      <!-- FOTO con los botones de cerrar y favorito encima -->
+      <div class="portada">
+        <img *ngIf="receta" class="foto" [src]="receta.strMealThumb" [alt]="receta.strMeal" />
+        <button type="button" class="boton-redondo cerrar" (click)="cerrar.emit()" aria-label="Cerrar">
+          <ion-icon name="close"></ion-icon>
+        </button>
+        <!-- Corazón: cambia de ícono según sea favorito o no -->
+        <button
+          type="button"
+          class="boton-redondo favorito"
+          [disabled]="!receta"
+          (click)="alternarFavorito()"
+          aria-label="Favorito"
+        >
+          <ion-icon [name]="esFavorito ? 'heart' : 'heart-outline'" [class.activo]="esFavorito"></ion-icon>
+        </button>
       </div>
 
-      <!-- MENSAJE DE ERROR -->
-      <div class="estado error" *ngIf="error && !cargando">
-        <ion-icon name="alert-circle-outline" size="large"></ion-icon>
-        <p>No se pudo cargar la receta.</p>
-        <ion-button size="small" (click)="idMeal && cargar(idMeal)">Reintentar</ion-button>
+      <!-- HOJA blanca que sube sobre la foto -->
+      <div class="hoja">
+        <div class="asa"></div>
+
+        <!-- INDICADOR DE CARGA -->
+        <div class="estado" *ngIf="cargando">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Cargando receta...</p>
+        </div>
+
+        <!-- MENSAJE DE ERROR -->
+        <div class="estado error" *ngIf="error && !cargando">
+          <ion-icon name="alert-circle-outline" size="large"></ion-icon>
+          <p>No se pudo cargar la receta.</p>
+          <ion-button size="small" (click)="idMeal && cargar(idMeal)">Reintentar</ion-button>
+        </div>
+
+        <!-- CONTENIDO -->
+        <div *ngIf="receta && !cargando">
+          <h1 class="titulo">{{ tituloEs }}</h1>
+          <p class="subtitulo">Cocina {{ receta.strArea | diccionario: 'area' }}</p>
+
+          <!-- Tres datos de la receta (categoría, país e ingredientes) -->
+          <div class="datos">
+            <div class="dato">
+              <ion-icon name="restaurant-outline"></ion-icon>
+              <span>{{ receta.strCategory | diccionario: 'categoria' }}</span>
+            </div>
+            <div class="dato">
+              <ion-icon name="earth-outline"></ion-icon>
+              <span>{{ receta.strArea | diccionario: 'area' }}</span>
+            </div>
+            <div class="dato">
+              <ion-icon name="list-outline"></ion-icon>
+              <span>{{ ingredientes.length }} ingredientes</span>
+            </div>
+          </div>
+
+          <div class="chips" *ngIf="etiquetas.length">
+            <ion-chip *ngFor="let etiqueta of etiquetas" outline>
+              <ion-label>{{ etiqueta }}</ion-label>
+            </ion-chip>
+          </div>
+
+          <!-- ion-segment: alterna entre ingredientes y preparación -->
+          <ion-segment class="pestanas" [value]="segmento" (ionChange)="cambiarSegmento($event)">
+            <ion-segment-button value="ingredientes">
+              <ion-label>Ingredientes</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="preparacion">
+              <ion-label>Preparación</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+
+          <!-- INGREDIENTES: se pueden tildar -->
+          <ul class="ingredientes" *ngIf="segmento === 'ingredientes'">
+            <li
+              *ngFor="let ing of ingredientes; let i = index"
+              [class.marcado]="marcados.has(i)"
+              (click)="alternarMarca(i)"
+            >
+              <span class="nombre">{{ ing.nombre }}</span>
+              <span class="medida">{{ ing.medida }}</span>
+              <ion-checkbox [checked]="marcados.has(i)" aria-label="Tengo este ingrediente"></ion-checkbox>
+            </li>
+          </ul>
+
+          <!-- PREPARACIÓN: un bloque por paso -->
+          <div class="pasos" *ngIf="segmento === 'preparacion'">
+            <div class="paso" *ngFor="let paso of pasos; let i = index">
+              <h3>Paso {{ i + 1 }}</h3>
+              <p>{{ paso }}</p>
+            </div>
+            <p class="traduciendo" *ngIf="traduciendo">Traduciendo...</p>
+          </div>
+        </div>
       </div>
 
-      <!-- CONTENIDO -->
-      <div *ngIf="receta && !cargando">
-        <img class="foto" [src]="receta.strMealThumb" [alt]="receta.strMeal" />
-
-        <div class="chips">
-          <ion-chip color="primary"><ion-label>{{ receta.strCategory | diccionario: 'categoria' }}</ion-label></ion-chip>
-          <ion-chip color="secondary"><ion-label>{{ receta.strArea | diccionario: 'area' }}</ion-label></ion-chip>
-          <ion-chip *ngFor="let etiqueta of etiquetas" outline>
-            <ion-label>{{ etiqueta }}</ion-label>
-          </ion-chip>
-        </div>
-
-        <h3 class="seccion">Ingredientes</h3>
-        <ion-list lines="none">
-          <ion-item *ngFor="let ing of ingredientes">
-            <ion-label>{{ ing.nombre }}</ion-label>
-            <ion-label slot="end" class="medida">{{ ing.medida }}</ion-label>
-          </ion-item>
-        </ion-list>
-
-        <h3 class="seccion">Preparación</h3>
-        <p class="instrucciones">{{ instruccionesEs }}</p>
-        <p class="traduciendo" *ngIf="traduciendo">Traduciendo...</p>
-
-        <div class="video" *ngIf="receta.strYoutube">
-          <ion-button fill="outline" [href]="receta.strYoutube" target="_blank" rel="noopener">
-            <ion-icon slot="start" name="logo-youtube"></ion-icon>
-            Ver video
-          </ion-button>
-        </div>
+      <!-- Barra fija de abajo con el video -->
+      <div slot="fixed" class="barra-video" *ngIf="receta && receta.strYoutube && !cargando">
+        <a class="boton-video" [href]="receta.strYoutube" target="_blank" rel="noopener">
+          <span class="circulo"><ion-icon name="logo-youtube"></ion-icon></span>
+          <span>Ver video de la receta</span>
+        </a>
       </div>
     </ion-content>
   </ng-template>

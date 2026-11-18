@@ -2,22 +2,28 @@ import { NgFor, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import {
   IonButton,
-  IonButtons,
+  IonCheckbox,
   IonChip,
   IonContent,
-  IonHeader,
   IonIcon,
-  IonItem,
   IonLabel,
-  IonList,
   IonModal,
+  IonSegment,
+  IonSegmentButton,
   IonSpinner,
-  IonTitle,
-  IonToolbar,
-  ToastController,
-} from '@ionic/angular';
+  SegmentCustomEvent,
+  ToastController, IonList, IonHeader, IonToolbar, IonTitle, IonButtons } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { alertCircleOutline, close, heart, heartOutline, logoYoutube } from 'ionicons/icons';
+import {
+  alertCircleOutline,
+  close,
+  earthOutline,
+  heart,
+  heartOutline,
+  listOutline,
+  logoYoutube,
+  restaurantOutline,
+} from 'ionicons/icons';
 
 import { Ingrediente, Meal } from '../../models/meal.model';
 import { FavoritosService } from '../../services/favoritos.service';
@@ -32,22 +38,19 @@ import { ingredienteEs, medidaEs } from '../../utils/diccionario';
   selector: 'app-receta-modal',
   templateUrl: './receta-modal.component.html',
   styleUrls: ['./receta-modal.component.scss'],
-  imports: [
+  imports: [IonButtons, IonTitle, IonToolbar, IonHeader, IonList, 
     NgIf,
     NgFor,
     IonModal,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
     IonContent,
+    IonButton,
     IonIcon,
     IonChip,
     IonLabel,
     IonSpinner,
-    IonList,
-    IonItem,
+    IonSegment,
+    IonSegmentButton,
+    IonCheckbox,
     DiccionarioPipe,
   ],
 })
@@ -63,6 +66,10 @@ export class RecetaModalComponent implements OnChanges {
   tituloEs = '';
   instruccionesEs = '';
   traduciendo = false;
+  /** Pestaña activa del detalle: ingredientes o preparación. */
+  segmento: 'ingredientes' | 'preparacion' = 'ingredientes';
+  /** Posiciones de los ingredientes tildados (ya los tengo / ya los puse). */
+  marcados = new Set<number>();
 
   constructor(
     private mealService: MealService,
@@ -70,7 +77,16 @@ export class RecetaModalComponent implements OnChanges {
     private toastCtrl: ToastController,
     private traduccionService: TraduccionService,
   ) {
-    addIcons({ alertCircleOutline, close, heart, heartOutline, logoYoutube });
+    addIcons({
+      alertCircleOutline,
+      close,
+      earthOutline,
+      heart,
+      heartOutline,
+      listOutline,
+      logoYoutube,
+      restaurantOutline,
+    });
   }
 
   ngOnChanges(): void {
@@ -83,6 +99,8 @@ export class RecetaModalComponent implements OnChanges {
     this.cargando = true;
     this.error = false;
     this.receta = null;
+    this.segmento = 'ingredientes';
+    this.marcados.clear();
     this.mealService.obtenerDetalle(id).subscribe({
       next: (meal) => {
         this.receta = meal;
@@ -121,6 +139,28 @@ export class RecetaModalComponent implements OnChanges {
         this.traduciendo = false;
       }
     });
+  }
+
+  cambiarSegmento(ev: SegmentCustomEvent): void {
+    this.segmento = ev.detail.value === 'preparacion' ? 'preparacion' : 'ingredientes';
+  }
+
+  /** Tilda o destilda un ingrediente de la lista. */
+  alternarMarca(indice: number): void {
+    if (this.marcados.has(indice)) {
+      this.marcados.delete(indice);
+    } else {
+      this.marcados.add(indice);
+    }
+  }
+
+  /** La preparación viene como un texto largo: se separa por líneas para mostrarla en pasos. */
+  get pasos(): string[] {
+    return this.instruccionesEs
+      .split(/\r?\n/)
+      .map((linea) => linea.trim())
+      // se descartan líneas vacías y las que solo dicen "STEP 1" / "1."
+      .filter((linea) => linea && !/^((step|paso)\s*)?\d+[.):]?$/i.test(linea));
   }
 
   get esFavorito(): boolean {

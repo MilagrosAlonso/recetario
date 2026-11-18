@@ -1,10 +1,81 @@
+// Pantalla de detalle: foto arriba y una hoja blanca con bordes redondeados encima
+
+.detalle {
+  --background: var(--ion-background-color);
+}
+
+/* ---------- Foto y botones redondos ---------- */
+.portada {
+  position: relative;
+  height: 300px;
+  background: var(--ion-color-light);
+}
+
+.foto {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.boton-redondo {
+  position: absolute;
+  top: calc(16px + env(safe-area-inset-top));
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ion-text-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+
+  &.cerrar {
+    left: 16px;
+  }
+
+  &.favorito {
+    right: 16px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+
+  ion-icon.activo {
+    color: #d9648a;
+  }
+}
+
+/* ---------- Hoja blanca ---------- */
+.hoja {
+  position: relative;
+  margin-top: -28px;
+  min-height: 60vh;
+  padding: 8px 20px 110px;
+  background: #fff;
+  border-radius: 28px 28px 0 0;
+}
+
+.asa {
+  width: 44px;
+  height: 5px;
+  margin: 4px auto 14px;
+  border-radius: 3px;
+  background: #d9d9d4;
+}
+
 .estado {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 48px 16px;
+  padding: 40px 16px;
   text-align: center;
   color: var(--ion-color-medium);
 
@@ -13,34 +84,176 @@
   }
 }
 
-.foto {
-  display: block;
-  width: 100%;
-  max-height: 280px;
-  object-fit: cover;
+.titulo {
+  margin: 0;
+  text-align: center;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
-.chips {
-  padding: 8px 12px 0;
-}
-
-.seccion {
-  margin: 16px 16px 4px;
-  font-weight: 600;
-}
-
-.medida {
-  text-align: right;
+.subtitulo {
+  margin: 4px 0 18px;
+  text-align: center;
   color: var(--ion-color-medium);
 }
 
-.instrucciones {
-  margin: 0;
-  padding: 0 16px 16px;
-  white-space: pre-line; /* respeta los saltos de línea de la receta */
-  line-height: 1.5;
+/* ---------- Datos de la receta ---------- */
+.datos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
-.video {
-  padding: 0 16px 24px;
+.dato {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 14px;
+  background: rgba(var(--ion-color-primary-rgb), 0.14);
+  color: var(--ion-color-primary-shade);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+.chips {
+  margin: 10px -4px 0;
+}
+
+/* ---------- Pestañas Ingredientes / Preparación ---------- */
+.pestanas {
+  margin: 18px 0 8px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #ecebe5;
+  min-height: 52px;
+  --background: transparent;
+
+  ion-segment-button {
+    --indicator-color: var(--ion-text-color);
+    --indicator-height: 100%;
+    --border-radius: 999px;
+    --color: var(--ion-text-color);
+    --color-checked: #fff;
+    --color-focused: var(--ion-text-color);
+    --padding-top: 0;
+    --padding-bottom: 0;
+    min-height: 44px;
+    font-weight: 600;
+    text-transform: none;
+
+    // El indicador (la píldora oscura) por defecto es una rayita: se estira para cubrir todo el botón
+    &::part(indicator) {
+      top: 0;
+      bottom: 0;
+      height: 100%;
+      padding: 0;
+    }
+
+    &::part(indicator-background) {
+      height: 100%;
+      border-radius: 999px;
+    }
+  }
+}
+
+/* ---------- Ingredientes ---------- */
+.ingredientes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 4px;
+    border-bottom: 1px solid #efeee9;
+    cursor: pointer;
+  }
+
+  .nombre {
+    flex: 1;
+  }
+
+  .medida {
+    color: var(--ion-color-medium);
+    text-align: right;
+  }
+
+  li.marcado .nombre {
+    text-decoration: line-through;
+    color: var(--ion-color-medium);
+  }
+
+  ion-checkbox {
+    pointer-events: none; // el clic lo maneja toda la fila
+    --size: 24px;
+    --border-radius: 6px;
+  }
+}
+
+/* ---------- Preparación ---------- */
+.pasos {
+  .paso {
+    padding: 14px 4px;
+
+    h3 {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    p {
+      margin: 0;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+  }
+}
+
+.traduciendo {
+  margin: 4px 4px 0;
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+}
+
+/* ---------- Barra fija con el video ---------- */
+.barra-video {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.boton-video {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--ion-text-color);
+  font-weight: 600;
+  text-decoration: none;
+
+  .circulo {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #3fb673;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+  }
 }
